@@ -3,17 +3,17 @@
 
 int main(void){
     char palavra[100];
+    scanf("%s",palavra);
     int bts = 0; // contador
 
-    scanf("%s",palavra);
 
-    while(palavra != "FIM"){
+    while(strcmp(palavra,"FIM")){
         for(int i = 0; i < strlen(palavra); i++ ){
-            if(palavra(i) >= 'A' && palavra(i) <= 'Z'){
+            if(palavra[i] >= 'A' && palavra[i] <= 'Z'){
                 bts++;
             }
         }
-        printf("%d",bts);
+        printf("%d\n\n",bts);
         bts = 0;
         scanf("%s",palavra);
     }
