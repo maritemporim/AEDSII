@@ -10,7 +10,7 @@ public class Maiusculo {
 
         while(palavra != "FIM"){
             for(int i = 0; i < palavra.length(); i++){
-                if(palavra.charAt(i) > 65 && palavra.charAt(i) < 90){
+                if(palavra.charAt(i) >= 'A' && palavra.charAt(i) <= 'Z'){
                         bts++;
                 }
                 
