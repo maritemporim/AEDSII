@@ -1,7 +1,7 @@
 import java.util.Scanner;
 import java.util.*;
 
-public class cesar {
+public class Cesar {
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in); //inicializando o scanner 
         String palavra = MyIO.readLine(); // lendo a palavra incial
