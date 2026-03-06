@@ -8,14 +8,13 @@ public class Maiusculo {
         String palavra;
         palavra = sc.nextLine();
 
-        while(palavra != "FIM"){
+        while(!palavra.equals("FIM")){
             for(int i = 0; i < palavra.length(); i++){
                 if(palavra.charAt(i) >= 'A' && palavra.charAt(i) <= 'Z'){
                         bts++;
                 }
                 
             }
-
             System.out.println(bts);
             bts = 0;
             palavra = sc.nextLine();
