@@ -1,74 +1,49 @@
 #include <stdio.h>
+#include <stdbool.h>
 
-int isFim(char str[]){
-    return str[0]=='F' && str[1]=='I' && str[2]=='M' && str[3]=='\0';
-}
-
-int tamanho(char str[]){
+int tamanho(char s[]) {
     int i = 0;
-    while(str[i] != '\0'){
+    while (s[i] != '\0') {
         i++;
     }
     return i;
 }
 
-int anagrama(char a[], char b[]){
-    int A1[256] = {0};
-    int B1[256] = {0};
-
-    int tamA = tamanho(a);
-    int tamB = tamanho(b);
-
-    if(tamA != tamB){
-        return 0;
+char minusculo(char c) {
+    if (c >= 'A' && c <= 'Z') {
+        return c + 32;
     }
-
-    for(int i = 0; i < tamA; i++){
-        A1[(unsigned char)a[i]]++;
-        B1[(unsigned char)b[i]]++;
-    }
-
-    for(int i = 0; i < 256; i++){
-        if(A1[i] != B1[i]){
-            return 0;
-        }
-    }
-
-    return 1;
+    return c;
 }
 
-int main(){
-    char str1[1000], str2[1000];
+bool Anagrama(char s1[], char s2[]) {
+    int len1 = tamanho(s1);
+    int len2 = tamanho(s2);
 
-    while(fgets(str1, 1000, stdin) != NULL){
+    if (len1 != len2) return false;
 
-        int i = 0;
-        while(str1[i] != '\0'){
-            if(str1[i] == '\n'){
-                str1[i] = '\0';
-                break;
-            }
-            i++;
-        }
+    int cont[256] = {0};
 
-        if(isFim(str1)){
-            break;
-        }
+    for (int i = 0; i < len1; i++) {
+        cont[(unsigned char)minusculo(s1[i])]++;
+    }
 
-        if(fgets(str2, 1000, stdin) == NULL){
-            break;
-        }
+    for (int i = 0; i < len2; i++) {
+        cont[(unsigned char)minusculo(s2[i])]--;
+    }
 
-        i = 0;
-        while(str2[i] != '\0'){
-            if(str2[i] == '\n'){
-                str2[i] = '\0';
-                break;
-            }
-            i++;
-        }
+    for (int i = 0; i < 256; i++) {
+        if (cont[i] != 0) return false;
+    }
 
-        if(anagrama(str1, str2)){
+    return true;
+}
+
+int main() {
+    char s1[100], s2[100];
+
+    while (scanf("%s %s", s1, s2) != EOF) {
+        if (Anagrama(s1, s2)) {
             printf("SIM\n");
         } else {
             printf("NAO\n");
