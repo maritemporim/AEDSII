@@ -1,330 +1,177 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <stdbool.h>
 
-/* ==================== TIPOS ==================== */
-
 typedef struct {
-    int hora;
-    int minuto;
-} Hora;
-
-typedef struct {
-    int ano;
-    int mes;
-    int dia;
+    int ano, mes, dia;
 } Data;
 
 typedef struct {
-    int    id;
-    char  *nome;
-    char  *cidade;
-    int    capacidade;
-    double avaliacao;
-    char **tipos_cozinha;
-    int    n_tipos_cozinha;
-    int    faixa_preco;
-    Hora   horario_abertura;
-    Hora   horario_fechamento;
-    Data   data_abertura;
-    bool   aberto;
-} Restaurante;
+    int hora, minuto;
+} Hora;
 
 typedef struct {
-    int           tamanho;
-    Restaurante **restaurantes;
-} Colecao_Restaurantes;
+    int id, capacidade;
+    char nome[100], cidade[100];
+    double avaliacao;
+    char tipos[10][50];
+    int qtdTipos;
+    int faixaPreco;
+    Hora abertura, fechamento;
+    Data data;
+    bool aberto;
+} Restaurante;
 
-/* ==================== AUX ==================== */
-
-static char *dup_str(const char *s) {
-    char *r = malloc(strlen(s) + 1);
-    strcpy(r, s);
-    return r;
+int contarPreco(char* s) {
+    int c = 0;
+    for (int i = 0; s[i]; i++) if (s[i] == '$') c++;
+    return c;
 }
 
-/* SPLIT SEM STRTOK */
-void split_sem_strtok(char *str, char delim, char ***out, int *count) {
-    int n = 1;
-    for (int i = 0; str[i]; i++)
-        if (str[i] == delim) n++;
-
-    char **result = malloc(n * sizeof(char*));
-
-    int idx = 0;
-    char *inicio = str;
-
-    for (int i = 0; ; i++) {
-        if (str[i] == delim || str[i] == '\0') {
-            int tam = &str[i] - inicio;
-
-            char *palavra = malloc(tam + 1);
-            strncpy(palavra, inicio, tam);
-            palavra[tam] = '\0';
-
-            result[idx++] = palavra;
-
-            if (str[i] == '\0') break;
-            inicio = &str[i + 1];
-        }
-    }
-
-    *out = result;
-    *count = idx;
-}
-
-/* ==================== DATA ==================== */
-
-Data parse_data(char *s) {
-    Data d;
-    sscanf(s, "%d-%d-%d", &d.ano, &d.mes, &d.dia);
-    return d;
-}
-
-void formatar_data(Data *data, char *buffer) {
-    sprintf(buffer, "%02d/%02d/%04d", data->dia, data->mes, data->ano);
-}
-
-/* ==================== HORA ==================== */
-
-Hora parse_hora(char *s) {
+Hora parseHora(char* s) {
     Hora h;
     sscanf(s, "%d:%d", &h.hora, &h.minuto);
     return h;
 }
 
-void formatar_hora(Hora *hora, char *buffer) {
-    sprintf(buffer, "%02d:%02d", hora->hora, hora->minuto);
+Data parseData(char* s) {
+    Data d;
+    sscanf(s, "%d-%d-%d", &d.ano, &d.mes, &d.dia);
+    return d;
 }
 
-/* ==================== CSV ==================== */
+Restaurante* parseRestaurante(char* linha) {
+    Restaurante* r = malloc(sizeof(Restaurante));
 
-static char *next_csv_field(char **ptr) {
-    char *start = *ptr;
-    char *out   = malloc(strlen(start) + 1);
-    int   i     = 0;
+    char tiposRaw[200], preco[10], horario[20], dataStr[20], abertoStr[10];
 
-    if (*start == '"') {
-        start++;
-        while (*start && *start != '"') out[i++] = *start++;
-        if (*start == '"') start++;
-        if (*start == ',') start++;
-    } else {
-        while (*start && *start != ',') out[i++] = *start++;
-        if (*start == ',') start++;
+    sscanf(linha, "%d,%[^,],%[^,],%d,%lf,%[^,],%[^,],%[^,],%[^,],%s",
+           &r->id, r->nome, r->cidade, &r->capacidade, &r->avaliacao,
+           tiposRaw, preco, horario, dataStr, abertoStr);
+
+    r->faixaPreco = contarPreco(preco);
+
+    r->qtdTipos = 0;
+    char* token = strtok(tiposRaw, ";");
+    while (token != NULL) {
+        strcpy(r->tipos[r->qtdTipos++], token);
+        token = strtok(NULL, ";");
     }
 
-    out[i] = '\0';
+    char h1[10], h2[10];
+    sscanf(horario, "%[^-]-%s", h1, h2);
+    r->abertura = parseHora(h1);
+    r->fechamento = parseHora(h2);
 
-    while (i > 0 && (out[i-1] == '\r' || out[i-1] == '\n'))
-        out[--i] = '\0';
-
-    *ptr = start;
-    return out;
-}
-
-/* ==================== PARSE ==================== */
-
-Restaurante *parse_restaurante(char *s) {
-    char *ptr = s;
-    Restaurante *r = malloc(sizeof(Restaurante));
-    char *f;
-
-    f = next_csv_field(&ptr);
-    r->id = atoi(f); free(f);
-
-    r->nome = next_csv_field(&ptr);
-    r->cidade = next_csv_field(&ptr);
-
-    f = next_csv_field(&ptr);
-    r->capacidade = atoi(f); free(f);
-
-    f = next_csv_field(&ptr);
-    r->avaliacao = atof(f); free(f);
-
-    /* SEM STRTOK */
-    f = next_csv_field(&ptr);
-    split_sem_strtok(f, ';', &r->tipos_cozinha, &r->n_tipos_cozinha);
-    free(f);
-
-    f = next_csv_field(&ptr);
-    int fp = 0;
-    for (int i = 0; f[i]; i++) if (f[i] == '$') fp++;
-    r->faixa_preco = fp;
-    free(f);
-
-    f = next_csv_field(&ptr);
-    char ab[6], fe[6];
-    sscanf(f, "%5[^-]-%5s", ab, fe);
-    r->horario_abertura   = parse_hora(ab);
-    r->horario_fechamento = parse_hora(fe);
-    free(f);
-
-    f = next_csv_field(&ptr);
-    r->data_abertura = parse_data(f);
-    free(f);
-
-    f = next_csv_field(&ptr);
-    r->aberto = (strcmp(f, "true") == 0);
-    free(f);
+    r->data = parseData(dataStr);
+    r->aberto = strcmp(abertoStr, "true") == 0;
 
     return r;
 }
 
-/* ==================== FORMAT ==================== */
+void formatar(Restaurante* r) {
+    char data[20], h1[10], h2[10];
 
-void formatar_restaurante(Restaurante *r, char *buffer) {
-    char tipos[512] = "";
-    for (int i = 0; i < r->n_tipos_cozinha; i++) {
-        if (i > 0) strcat(tipos, ",");
-        strcat(tipos, r->tipos_cozinha[i]);
+    sprintf(data, "%02d/%02d/%04d", r->data.dia, r->data.mes, r->data.ano);
+    sprintf(h1, "%02d:%02d", r->abertura.hora, r->abertura.minuto);
+    sprintf(h2, "%02d:%02d", r->fechamento.hora, r->fechamento.minuto);
+
+    printf("[%d ## %s ## %s ## %d ## %.1lf ## [", r->id, r->nome, r->cidade, r->capacidade, r->avaliacao);
+
+    for (int i = 0; i < r->qtdTipos; i++) {
+        printf("%s", r->tipos[i]);
+        if (i < r->qtdTipos - 1) printf(",");
     }
 
-    char fp[6] = "";
-    for (int i = 0; i < r->faixa_preco; i++) strcat(fp, "$");
+    printf("] ## ");
 
-    char ha[6], hf[6];
-    formatar_hora(&r->horario_abertura, ha);
-    formatar_hora(&r->horario_fechamento, hf);
+    for (int i = 0; i < r->faixaPreco; i++) printf("$");
 
-    char da[11];
-    formatar_data(&r->data_abertura, da);
-
-    sprintf(buffer,
-        "[%d ## %s ## %s ## %d ## %.1f ## [%s] ## %s ## %s-%s ## %s ## %s]",
-        r->id, r->nome, r->cidade, r->capacidade, r->avaliacao,
-        tipos, fp, ha, hf, da, r->aberto ? "true" : "false");
+    printf(" ## %s-%s ## %s ## %s]\n",
+           h1, h2, data,
+           r->aberto ? "true" : "false");
 }
 
-/* ==================== COLECAO ==================== */
+typedef struct {
+    Restaurante* array[1000];
+    int n;
+} Colecao;
 
-void ler_csv_colecao(Colecao_Restaurantes *col, char *path) {
-    FILE *fp = fopen(path, "r");
-    if (!fp) { fprintf(stderr, "Erro ao abrir %s\n", path); exit(1); }
+Colecao lerCsv() {
+    Colecao c;
+    c.n = 0;
 
-    char line[4096];
-    int n = 0;
+    FILE* f = fopen("/tmp/restaurantes.csv", "r");
+    char linha[512];
 
-    fgets(line, sizeof(line), fp);
-    while (fgets(line, sizeof(line), fp)) n++;
+    fgets(linha, sizeof(linha), f);
 
-    rewind(fp);
-    fgets(line, sizeof(line), fp);
-
-    col->tamanho = n;
-    col->restaurantes = malloc(n * sizeof(Restaurante *));
-
-    for (int i = 0; i < n; i++) {
-        fgets(line, sizeof(line), fp);
-        line[strcspn(line, "\n")] = '\0';
-        col->restaurantes[i] = parse_restaurante(line);
+    while (fgets(linha, sizeof(linha), f)) {
+        linha[strcspn(linha, "\n")] = 0;
+        c.array[c.n++] = parseRestaurante(linha);
     }
 
-    fclose(fp);
+    fclose(f);
+    return c;
 }
 
-Colecao_Restaurantes *ler_csv(void) {
-    Colecao_Restaurantes *col = malloc(sizeof(Colecao_Restaurantes));
-    ler_csv_colecao(col, "/tmp/restaurantes.csv");
-    return col;
+Restaurante* buscarPorId(Colecao* c, int id) {
+    for (int i = 0; i < c->n; i++) {
+        if (c->array[i]->id == id) return c->array[i];
+    }
+    return NULL;
 }
 
-/* ==================== COUNTING SORT ==================== */
-
-static long long comparacoes  = 0;
-static long long movimentacoes = 0;
-
-void counting_sort(Restaurante **arr, int n) {
-    if (n <= 0) return;
-
-    int min_cap = arr[0]->capacidade;
-    int max_cap = arr[0]->capacidade;
+void countingSort(Restaurante* arr[], int n) {
+    int max = arr[0]->capacidade;
 
     for (int i = 1; i < n; i++) {
-        comparacoes++;
-        if (arr[i]->capacidade < min_cap) min_cap = arr[i]->capacidade;
-        comparacoes++;
-        if (arr[i]->capacidade > max_cap) max_cap = arr[i]->capacidade;
-    }
-
-    int range = max_cap - min_cap + 1;
-
-    int *count = calloc(range, sizeof(int));
-    for (int i = 0; i < n; i++)
-        count[arr[i]->capacidade - min_cap]++;
-
-    for (int i = 1; i < range; i++)
-        count[i] += count[i - 1];
-
-    Restaurante **output = malloc(n * sizeof(Restaurante *));
-    for (int i = n - 1; i >= 0; i--) {
-        int idx = count[arr[i]->capacidade - min_cap] - 1;
-        output[idx] = arr[i];
-        count[arr[i]->capacidade - min_cap]--;
-        movimentacoes++;
-    }
-
-    for (int i = 0; i < n; i++) {
-        arr[i] = output[i];
-        movimentacoes++;
-    }
-
-    free(output);
-    free(count);
-}
-
-/* ==================== MAIN ==================== */
-
-int main(void) {
-    Colecao_Restaurantes *col = ler_csv();
-
-    int n = col->tamanho;
-    Restaurante **arr = malloc(n * sizeof(Restaurante *));
-    for (int i = 0; i < n; i++) arr[i] = col->restaurantes[i];
-
-    struct timespec t0, t1;
-    clock_gettime(CLOCK_MONOTONIC, &t0);
-    counting_sort(arr, n);
-    clock_gettime(CLOCK_MONOTONIC, &t1);
-
-    double tempo = (t1.tv_sec - t0.tv_sec) * 1e9 + (t1.tv_nsec - t0.tv_nsec);
-
-    int id;
-    char buf[2048];
-
-    while (scanf("%d", &id) == 1 && id != -1) {
-        for (int i = 0; i < n; i++) {
-            if (col->restaurantes[i]->id == id) {
-                formatar_restaurante(col->restaurantes[i], buf);
-                printf("%s\n", buf);
-                break;
-            }
+        if (arr[i]->capacidade > max) {
+            max = arr[i]->capacidade;
         }
     }
 
-    FILE *log = fopen("matricula_countingsort.txt", "w");
-    if (log) {
-        fprintf(log, "matricula\t%lld\t%lld\t%.0f\n",
-                comparacoes, movimentacoes, tempo);
-        fclose(log);
-    }
-
-    free(arr);
+    int* count = calloc(max + 1, sizeof(int));
+    Restaurante** ordenado = malloc(n * sizeof(Restaurante*));
 
     for (int i = 0; i < n; i++) {
-        Restaurante *r = col->restaurantes[i];
-        free(r->nome);
-        free(r->cidade);
-        for (int j = 0; j < r->n_tipos_cozinha; j++)
-            free(r->tipos_cozinha[j]);
-        free(r->tipos_cozinha);
-        free(r);
+        count[arr[i]->capacidade]++;
     }
 
-    free(col->restaurantes);
-    free(col);
+    for (int i = 1; i <= max; i++) {
+        count[i] += count[i - 1];
+    }
+
+    for (int i = n - 1; i >= 0; i--) {
+        ordenado[count[arr[i]->capacidade] - 1] = arr[i];
+        count[arr[i]->capacidade]--;
+    }
+
+    for (int i = 0; i < n; i++) {
+        arr[i] = ordenado[i];
+    }
+
+    free(count);
+    free(ordenado);
+}
+
+int main() {
+    Colecao base = lerCsv();
+
+    Restaurante* lista[1000];
+    int n = 0;
+
+    int id;
+    while (scanf("%d", &id) && id != -1) {
+        lista[n++] = buscarPorId(&base, id);
+    }
+
+    countingSort(lista, n);
+
+    for (int i = 0; i < n; i++) {
+        formatar(lista[i]);
+    }
 
     return 0;
 }

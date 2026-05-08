@@ -40,20 +40,20 @@ class Hora {
     private int minuto;
 
     public Hora(int hora, int minuto) {
-        this.hora   = hora;
+        this.hora = hora;
         this.minuto = minuto;
     }
 
-    public int getHora()   { return hora; }
+    public int getHora() { return hora; }
     public int getMinuto() { return minuto; }
 
-    public void setHora(int hora)     { this.hora = hora; }
+    public void setHora(int hora) { this.hora = hora; }
     public void setMinuto(int minuto) { this.minuto = minuto; }
 
     public static Hora parseHora(String s) {
         Scanner sc = new Scanner(s);
         sc.useDelimiter(":");
-        int hora   = sc.nextInt();
+        int hora = sc.nextInt();
         int minuto = sc.nextInt();
         sc.close();
         return new Hora(hora, minuto);
@@ -65,58 +65,58 @@ class Hora {
 }
 
 class Restaurante {
-    private int      id;
-    private String   nome;
-    private String   cidade;
-    private int      capacidade;
-    private double   avaliacao;
+    private int id;
+    private String nome;
+    private String cidade;
+    private int capacidade;
+    private double avaliacao;
     private String[] tiposCozinha;
-    private int      faixaPreco;
-    private Hora     horarioAbertura;
-    private Hora     horarioFechamento;
-    private Data     dataAbertura;
-    private boolean  aberto;
+    private int faixaPreco;
+    private Hora horarioAbertura;
+    private Hora horarioFechamento;
+    private Data  dataAbertura;
+    private boolean aberto;
 
     public Restaurante(int id, String nome, String cidade, int capacidade,
                        double avaliacao, String[] tiposCozinha, int faixaPreco,
                        Hora horarioAbertura, Hora horarioFechamento,
                        Data dataAbertura, boolean aberto) {
-        this.id                = id;
-        this.nome              = nome;
-        this.cidade            = cidade;
-        this.capacidade        = capacidade;
-        this.avaliacao         = avaliacao;
-        this.tiposCozinha      = tiposCozinha;
-        this.faixaPreco        = faixaPreco;
-        this.horarioAbertura   = horarioAbertura;
+        this.id  = id;
+        this.nome = nome;
+        this.cidade = cidade;
+        this.capacidade = capacidade;
+        this.avaliacao = avaliacao;
+        this.tiposCozinha = tiposCozinha;
+        this.faixaPreco = faixaPreco;
+        this.horarioAbertura = horarioAbertura;
         this.horarioFechamento = horarioFechamento;
-        this.dataAbertura      = dataAbertura;
-        this.aberto            = aberto;
+        this.dataAbertura = dataAbertura;
+        this.aberto = aberto;
     }
 
-    public int      getId()                { return id; }
-    public String   getNome()              { return nome; }
-    public String   getCidade()            { return cidade; }
-    public int      getCapacidade()        { return capacidade; }
-    public double   getAvaliacao()         { return avaliacao; }
-    public String[] getTiposCozinha()      { return tiposCozinha; }
-    public int      getFaixaPreco()        { return faixaPreco; }
-    public Hora     getHorarioAbertura()   { return horarioAbertura; }
-    public Hora     getHorarioFechamento() { return horarioFechamento; }
-    public Data     getDataAbertura()      { return dataAbertura; }
-    public boolean  getAberto()            { return aberto; }
+    public int getId() { return id; }
+    public String getNome() { return nome; }
+    public String getCidade() { return cidade; }
+    public int getCapacidade() { return capacidade; }
+    public double  getAvaliacao()  { return avaliacao; }
+    public String[] getTiposCozinha() { return tiposCozinha; }
+    public int getFaixaPreco() { return faixaPreco; }
+    public Hora getHorarioAbertura() { return horarioAbertura; }
+    public Hora getHorarioFechamento() { return horarioFechamento; }
+    public Data  getDataAbertura() { return dataAbertura; }
+    public boolean  getAberto() { return aberto; }
 
-    public void setId(int id)                          { this.id = id; }
-    public void setNome(String nome)                   { this.nome = nome; }
-    public void setCidade(String cidade)               { this.cidade = cidade; }
-    public void setCapacidade(int capacidade)          { this.capacidade = capacidade; }
-    public void setAvaliacao(double avaliacao)         { this.avaliacao = avaliacao; }
+    public void setId(int id)  { this.id = id; }
+    public void setNome(String nome) { this.nome = nome; }
+    public void setCidade(String cidade) { this.cidade = cidade; }
+    public void setCapacidade(int capacidade) { this.capacidade = capacidade; }
+    public void setAvaliacao(double avaliacao){ this.avaliacao = avaliacao; }
     public void setTiposCozinha(String[] tiposCozinha) { this.tiposCozinha = tiposCozinha; }
-    public void setFaixaPreco(int faixaPreco)          { this.faixaPreco = faixaPreco; }
-    public void setHorarioAbertura(Hora h)             { this.horarioAbertura = h; }
-    public void setHorarioFechamento(Hora h)           { this.horarioFechamento = h; }
-    public void setDataAbertura(Data d)                { this.dataAbertura = d; }
-    public void setAberto(boolean aberto)              { this.aberto = aberto; }
+    public void setFaixaPreco(int faixaPreco) { this.faixaPreco = faixaPreco; }
+    public void setHorarioAbertura(Hora h) { this.horarioAbertura = h; }
+    public void setHorarioFechamento(Hora h) { this.horarioFechamento = h; }
+    public void setDataAbertura(Data d) { this.dataAbertura = d; }
+    public void setAberto(boolean aberto) { this.aberto = aberto; }
 
     public static int converterPreco(String str) {
         int count = 0;
@@ -130,23 +130,23 @@ class Restaurante {
         sc.useLocale(Locale.US);
         sc.useDelimiter(",");
 
-        int    id         = sc.nextInt();
-        String nome       = sc.next();
-        String cidade     = sc.next();
-        int    capacidade = sc.nextInt();
+        int id = sc.nextInt();
+        String nome = sc.next();
+        String cidade  sc.next();
+        int capacidade = sc.nextInt();
         double avaliacao  = sc.nextDouble();
         String tipoCozinhaRaw = sc.next();
-        int    faixaPreco = converterPreco(sc.next());
-        String horarios   = sc.next();
+        int faixaPreco = converterPreco(sc.next());
+        String horarios = sc.next();
 
         Scanner scHora = new Scanner(horarios);
         scHora.useDelimiter("-");
-        Hora horarioAbertura   = Hora.parseHora(scHora.next());
+        Hora horarioAbertura = Hora.parseHora(scHora.next());
         Hora horarioFechamento = Hora.parseHora(scHora.next());
         scHora.close();
 
-        Data    dataAbertura = Data.parseData(sc.next());
-        boolean aberto       = sc.next().trim().compareTo("true") == 0;
+        Data dataAbertura = Data.parseData(sc.next());
+        boolean aberto = sc.next().trim().compareTo("true") == 0;
         sc.close();
 
         String[] temp = new String[15];
@@ -257,7 +257,7 @@ class HeapSort {
 
     private static void heapify(Restaurante[] arr, int n, int i) {
         int maior = i;
-        int esq   = 2 * i + 1;
+        int esq = 2 * i + 1;
         int dir   = 2 * i + 2;
 
         if (esq < n && comparar(arr[esq], arr[maior]) > 0)

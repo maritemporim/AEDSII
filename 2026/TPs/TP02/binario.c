@@ -35,22 +35,22 @@ void formatar_hora(Hora* hora, char* buffer) {
     sprintf(buffer, "%02d:%02d", hora->hora, hora->minuto);
 }
 
-#define MAX_TIPOS  15
-#define MAX_STR    256
+#define MAX_TIPOS 15
+#define MAX_STR 256
 
 typedef struct {
-    int    id;
-    char   nome[MAX_STR];
-    char   cidade[MAX_STR];
-    int    capacidade;
+    int id;
+    char nome[MAX_STR];
+    char cidade[MAX_STR];
+    int capacidade;
     double avaliacao;
-    int    n_tipos_cozinha;
-    char   tipos_cozinha[MAX_TIPOS][MAX_STR];
-    int    faixa_preco;
-    Hora   horario_abertura;
-    Hora   horario_fechamento;
-    Data   data_abertura;
-    bool   aberto;
+    int n_tipos_cozinha;
+    char tipos_cozinha[MAX_TIPOS][MAX_STR];
+    int faixa_preco;
+    Hora horario_abertura;
+    Hora horario_fechamento;
+    Data data_abertura;
+    bool aberto;
 } Restaurante;
 
 int converter_preco(char* str) {
@@ -136,9 +136,9 @@ void formatar_restaurante(Restaurante* r, char* buffer) {
     for (int i = 0; i < r->faixa_preco; i++) strcat(preco, "$");
 
     char buf_ab[10], buf_fe[10], buf_data[12];
-    formatar_hora(&r->horario_abertura,   buf_ab);
+    formatar_hora(&r->horario_abertura,buf_ab);
     formatar_hora(&r->horario_fechamento, buf_fe);
-    formatar_data(&r->data_abertura,      buf_data);
+    formatar_data(&r->data_abertura, buf_data);
 
     sprintf(buffer,
         "[%d ## %s ## %s ## %d ## %.1f ## [%s] ## %s ## %s-%s ## %s ## %s]",
@@ -148,7 +148,7 @@ void formatar_restaurante(Restaurante* r, char* buffer) {
 }
 
 typedef struct {
-    int           tamanho;
+    int tamanho;
     Restaurante** restaurantes;
 } Colecao_Restaurantes;
 
@@ -156,7 +156,7 @@ void ler_csv_colecao(Colecao_Restaurantes* colecao, char* path) {
     FILE* f = fopen(path, "r");
     if (!f) {
         fprintf(stderr, "Erro ao abrir: %s\n", path);
-        colecao->tamanho      = 0;
+        colecao->tamanho = 0;
         colecao->restaurantes = NULL;
         return;
     }
@@ -194,8 +194,7 @@ void liberar_colecao(Colecao_Restaurantes* colecao) {
     free(colecao);
 }
 
-void selection_sort(Restaurante** arr, int n,
-                    long long* comparacoes, long long* movimentacoes) {
+void selection_sort(Restaurante** arr, int n, long long* comparacoes, long long* movimentacoes) {
     *comparacoes   = 0;
     *movimentacoes = 0;
 
@@ -208,15 +207,14 @@ void selection_sort(Restaurante** arr, int n,
         }
         if (min != i) {
             Restaurante* tmp = arr[i];
-            arr[i]   = arr[min];
+            arr[i] = arr[min];
             arr[min] = tmp;
             (*movimentacoes)++;
         }
     }
 }
 
-int busca_binaria(Restaurante** arr, int n,
-                  char* nome, long long* comparacoes) {
+int busca_binaria(Restaurante** arr, int n, char* nome, long long* comparacoes) {
     int esq = 0, dir = n - 1;
 
     while (esq <= dir) {
@@ -226,7 +224,7 @@ int busca_binaria(Restaurante** arr, int n,
 
         if (cmp == 0) return 1;
         else if (cmp < 0) esq = meio + 1;
-        else               dir = meio - 1;
+        else dir = meio - 1;
     }
     return 0;
 }
@@ -241,7 +239,7 @@ int main() {
         ids[n_ids++] = id;
 
     Restaurante** base   = (Restaurante**) malloc(n_ids * sizeof(Restaurante*));
-    int           n_base = 0;
+    int n_base = 0;
     for (int i = 0; i < n_ids; i++) {
         Restaurante* r = buscar_por_id(colecao, ids[i]);
         if (r != NULL) base[n_base++] = r;
@@ -271,8 +269,7 @@ int main() {
     }
 
     clock_gettime(CLOCK_MONOTONIC, &t_fim);
-    double tempo_ms = (t_fim.tv_sec  - t_ini.tv_sec)  * 1000.0
-                    + (t_fim.tv_nsec - t_ini.tv_nsec) / 1e6;
+    double tempo_ms = (t_fim.tv_sec  - t_ini.tv_sec)  * 1000.0 + (t_fim.tv_nsec - t_ini.tv_nsec) / 1e6;
 
     FILE* log = fopen("885948_binaria.txt", "w");
     if (log) {
